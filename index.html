@@ -3,55 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>寻宝冒险游戏</title>
+    <title>神秘寻宝冒险</title>
     <style>
-        /* 保留之前的CSS样式（动画、布局等） */
-        body {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #1a1a2e;
-            color: white;
-            overflow: hidden;
+            padding: 20px;
         }
 
-        #start-screen {
-            text-align: center;
-            padding: 2rem;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        #game-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
+        .game-container {
             width: 100%;
-            height: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
         }
 
         .scene {
-            width: 80%;
-            height: 70%;
-            background-size: cover;
-            background-position: center;
+            width: 100%;
+            height: 400px;
             border-radius: 10px;
-            margin-bottom: 2rem;
-            transition: all 0.5s ease;
+            margin-bottom: 30px;
             position: relative;
             overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.8s ease-in-out;
+            opacity: 0;
+            transform: scale(0.9);
         }
 
-        .library { background-image: url('https://images.unsplash.com/photo-1551269901-5c5e14c25df7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
-        .script { background-image: url('https://images.unsplash.com/photo-1512415533981-0976b311b73b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
-        .temple { background-image: url('https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
-        .box { background-image: url('https://images.unsplash.com/photo-1550553601-2950819e543f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
-        .treasure { background-image: url('https://images.unsplash.com/photo-1581579438361-9d5940a469e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
-        .failure { background-image: url('https://images.unsplash.com/photo-1518655048521-f130df041f66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .scene.active {
+            opacity: 1;
+            transform: scale(1);
+        }
 
         .scene::after {
             content: '';
@@ -63,126 +65,185 @@
             background-color: rgba(0, 0, 0, 0.5);
         }
 
-        #status {
-            font-size: 1.5rem;
-            padding: 1rem 2rem;
+        .status {
             background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            z-index: 10;
-            text-align: center;
-            max-width: 80%;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-in-out;
+        }
+
+        .status.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .controls {
+            margin-top: 20px;
         }
 
         button {
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            background-color: #e6b89c;
+            background-color: #ffd700;
+            color: #1a1a2e;
             border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            margin: 0 10px;
         }
 
-        button:hover { background-color: #ff8b5e; }
-
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        .fade-out { animation: fadeOut 0.5s ease forwards; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        button:hover {
+            background-color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
         }
 
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
+        #continue-btn, #restart-btn {
+            display: none;
+            margin-top: 20px;
         }
 
-        .title {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #e6b89c;
+        #choices {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .choice-btn {
+            margin: 0 10px;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
         }
 
         .instructions {
-            margin: 2rem 0;
+            margin: 20px 0 30px;
             line-height: 1.6;
         }
+
+        .completion {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .completion h2 {
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        /* 场景背景图 */
+        .library { background-image: url('https://images.unsplash.com/photo-1551269901-5c5e14c25df7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .ancient-script { background-image: url('https://images.unsplash.com/photo-1512415533981-0976b311b73b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .forest { background-image: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .passage-left { background-image: url('https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .passage-right { background-image: url('https://images.unsplash.com/photo-1471922694854-ff1b63b20054?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .puzzle { background-image: url('https://images.unsplash.com/photo-1550553601-2950819e543f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .treasure-box { background-image: url('https://images.unsplash.com/photo-1556911220-bf4062ae6e9b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .treasure { background-image: url('https://images.unsplash.com/photo-1581579438361-9d5940a469e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .failure { background-image: url('https://images.unsplash.com/photo-1518655048521-f130df041f66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
     </style>
 </head>
 <body>
-    <div id="start-screen">
-        <h1 class="title">寻宝冒险</h1>
-        <p class="instructions">
-            你将踏上一段惊险的寻宝之旅，穿越图书馆、解读古卷、探索神庙，
-            最终寻找传说中的宝藏。小心各种障碍，祝你好运！
-        </p>
-        <button id="start-btn">开始冒险</button>
+    <div class="game-container">
+        <div class="start-screen" id="start-screen">
+            <h1>神秘寻宝冒险</h1>
+            <p class="instructions">
+                你将踏上一段惊险的寻宝之旅，穿越图书馆、解读古卷、穿越森林、探索神庙，
+                解开重重谜题，最终寻找传说中的宝藏。每一步都需谨慎，祝你好运！
+            </p>
+            <button id="start-btn">开始冒险</button>
+        </div>
+
+        <div id="game-screen" style="display: none;">
+            <div class="scene" id="scene"></div>
+            <div class="status" id="status"></div>
+            <div id="choices"></div>
+            <div class="controls">
+                <button id="continue-btn">继续冒险</button>
+                <button id="restart-btn">重新开始</button>
+            </div>
+        </div>
+
+        <div class="completion" id="completion">
+            <h2>恭喜你成功找到宝藏！</h2>
+            <p>你展现了非凡的智慧和勇气，成功闯过所有难关！</p>
+            <button id="complete-restart">再来一次</button>
+        </div>
     </div>
 
-    <div id="game-screen">
-        <div id="scene" class="scene"></div>
-        <div id="status"></div>
-    </div>
-
-    <!-- 关键：引入treasure.js文件 -->
     <script src="treasure.js"></script>
-    <!-- 额外添加：将原JS中的控制台输出改为页面动画展示 -->
     <script>
-        // 扩展treasure.js的功能，将日志输出改为页面动画
-        function updateStatus(message, scene) {
+        // 页面更新状态函数
+        function updateGameStatus(message, scene) {
             const statusElement = document.getElementById('status');
             const sceneElement = document.getElementById('scene');
             
-            // 动画效果
-            statusElement.classList.add('fade-out');
-            sceneElement.classList.add('fade-out');
+            // 移除活动状态以触发动画
+            statusElement.classList.remove('active');
+            sceneElement.classList.remove('active');
             
+            // 延迟更新内容以让动画完成
             setTimeout(() => {
                 statusElement.textContent = message;
                 sceneElement.className = `scene ${scene}`;
                 
-                statusElement.classList.remove('fade-out');
-                sceneElement.classList.remove('fade-out');
-                statusElement.classList.add('fade-in');
-                sceneElement.classList.add('fade-in');
-                
+                // 添加活动状态以触发进入动画
                 setTimeout(() => {
-                    statusElement.classList.remove('fade-in');
-                    sceneElement.classList.remove('fade-in');
-                }, 500);
+                    statusElement.classList.add('active');
+                    sceneElement.classList.add('active');
+                }, 50);
             }, 500);
         }
 
-        // 重写寻宝函数，使用页面动画代替控制台输出
-        async function findTreasureWithAsyncAwait() {
-            try {
-                const clue = await TreasureMap.getInitialClue();
-                updateStatus(clue, 'library');
-                await new Promise(resolve => setTimeout(resolve, 1000));
+        // 显示完成界面
+        function showCompletion() {
+            document.getElementById('completion').style.display = 'flex';
+        }
 
-                const location = await TreasureMap.decodeAncientScript(clue);
-                updateStatus(location, 'script');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                const box = await TreasureMap.searchTemple(location);
-                updateStatus(box, 'box');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                const treasure = await TreasureMap.openTreasureBox();
-                updateStatus(treasure, 'treasure');
-            } catch (error) {
-                updateStatus(`任务失败: ${error}`, 'failure');
-            }
+        // 显示重新开始按钮
+        function showRestartButton() {
+            document.getElementById('restart-btn').style.display = 'block';
         }
 
         // 绑定开始按钮事件
         document.getElementById('start-btn').addEventListener('click', () => {
             document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'flex';
-            findTreasureWithAsyncAwait(); // 启动带动画的寻宝流程
+            document.getElementById('game-screen').style.display = 'block';
+            findTreasureWithAsyncAwait();
         });
-     <script src="treasure.js"> </script>
-</body>
 
+        // 绑定重新开始按钮事件
+        document.getElementById('restart-btn').addEventListener('click', restartGame);
+        document.getElementById('complete-restart').addEventListener('click', restartGame);
+
+        // 重新开始游戏
+        function restartGame() {
+            document.getElementById('completion').style.display = 'none';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.getElementById('choices').innerHTML = '';
+            findTreasureWithAsyncAwait();
+        }
+    </script>
+</body>
 </html>
