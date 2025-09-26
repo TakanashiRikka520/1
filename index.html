@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻宝冒险游戏</title>
+    <style>
+        /* 保留之前的CSS样式（动画、布局等） */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+
+        #start-screen {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .scene {
+            width: 80%;
+            height: 70%;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .library { background-image: url('https://images.unsplash.com/photo-1551269901-5c5e14c25df7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .script { background-image: url('https://images.unsplash.com/photo-1512415533981-0976b311b73b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .temple { background-image: url('https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .box { background-image: url('https://images.unsplash.com/photo-1550553601-2950819e543f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .treasure { background-image: url('https://images.unsplash.com/photo-1581579438361-9d5940a469e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+        .failure { background-image: url('https://images.unsplash.com/photo-1518655048521-f130df041f66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); }
+
+        .scene::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #status {
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            z-index: 10;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background-color: #e6b89c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover { background-color: #ff8b5e; }
+
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        .fade-out { animation: fadeOut 0.5s ease forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #e6b89c;
+        }
+
+        .instructions {
+            margin: 2rem 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1 class="title">寻宝冒险</h1>
+        <p class="instructions">
+            你将踏上一段惊险的寻宝之旅，穿越图书馆、解读古卷、探索神庙，
+            最终寻找传说中的宝藏。小心各种障碍，祝你好运！
+        </p>
+        <button id="start-btn">开始冒险</button>
+    </div>
+
+    <div id="game-screen">
+        <div id="scene" class="scene"></div>
+        <div id="status"></div>
+    </div>
+
+    <!-- 关键：引入treasure.js文件 -->
+    <script src="treasure.js"></script>
+    <!-- 额外添加：将原JS中的控制台输出改为页面动画展示 -->
+    <script>
+        // 扩展treasure.js的功能，将日志输出改为页面动画
+        function updateStatus(message, scene) {
+            const statusElement = document.getElementById('status');
+            const sceneElement = document.getElementById('scene');
+            
+            // 动画效果
+            statusElement.classList.add('fade-out');
+            sceneElement.classList.add('fade-out');
+            
+            setTimeout(() => {
+                statusElement.textContent = message;
+                sceneElement.className = `scene ${scene}`;
+                
+                statusElement.classList.remove('fade-out');
+                sceneElement.classList.remove('fade-out');
+                statusElement.classList.add('fade-in');
+                sceneElement.classList.add('fade-in');
+                
+                setTimeout(() => {
+                    statusElement.classList.remove('fade-in');
+                    sceneElement.classList.remove('fade-in');
+                }, 500);
+            }, 500);
+        }
+
+        // 重写寻宝函数，使用页面动画代替控制台输出
+        async function findTreasureWithAsyncAwait() {
+            try {
+                const clue = await TreasureMap.getInitialClue();
+                updateStatus(clue, 'library');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                const location = await TreasureMap.decodeAncientScript(clue);
+                updateStatus(location, 'script');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                const box = await TreasureMap.searchTemple(location);
+                updateStatus(box, 'box');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                const treasure = await TreasureMap.openTreasureBox();
+                updateStatus(treasure, 'treasure');
+            } catch (error) {
+                updateStatus(`任务失败: ${error}`, 'failure');
+            }
+        }
+
+        // 绑定开始按钮事件
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            findTreasureWithAsyncAwait(); // 启动带动画的寻宝流程
+        });
+    </script>
+</body>
+</html>
